@@ -8,23 +8,40 @@ class Toggle extends React.Component {
     onReset: () => {},
     initialOn: false
   };
+
+  static stateChangeTypes = {
+    reset: "__reset__",
+    toggle: "__toggle__"
+  };
   initialState = { on: this.props.initialOn };
   state = this.initialState;
-  toggle = () =>
-    this.setState(
-      ({ on }) => ({ on: !on }),
+  internalSetState(changes, callback) {
+    this.setState(state => {
+      const changeObject =
+        typeof changes === "function" ? changes(state) : changes;
+      const reducedChanges = this.props.stateReducer(state, changeObject);
+      const { type: ignoredType, ...onlyChanges } = reducedChanges;
+      return onlyChanges;
+    }, callback);
+  }
+  toggle = ({ type = Toggle.stateChangeTypes.toggle } = {}) =>
+    this.internalSetState(
+      ({ on }) => ({ on: !on, type }),
       () => {
         this.props.onToggle && this.props.onToggle(this.state.on);
       }
     );
 
   reset = () =>
-    this.setState(this.initialState, () => this.props.onReset(this.state.on));
+    this.internalSetState(
+      { ...this.initialState, type: Toggle.stateChangeTypes.reset },
+      () => this.props.onReset(this.state.on)
+    );
 
   getTogglerProps = ({ onClick, className, ...props }) => {
     return {
       "aria-pressed": this.state.on,
-      onClick: callAll(onClick, this.toggle),
+      onClick: callAll(onClick, () => this.toggle()),
       className: `${className} our-custom-class-name`,
       ...props
     };
@@ -49,36 +66,56 @@ function CommonToggle(props) {
   );
 }
 
-function Usage({
-  onToggle = (...args) => console.log("onToggle", ...args),
-  onButtonClick = (...args) => alert("onButtonClick"),
-  onReset = (...args) => console.log("onreset"),
-  initialOn = true
-}) {
-  return (
-    <Toggle onToggle={onToggle} onReset={onReset}>
-      {({ getTogglerProps, on, reset }) => (
-        <div>
-          <Switch on={on} {...getTogglerProps({ on })} />
-          <hr />
-          <button onClick={reset}>Reset</button>
-          <button
-            aria-label="custom-button"
-            {...getTogglerProps({
-              "aria-pressed": null,
-              "aria-label": "custom-button",
-              id: "custom-button-id"
-            })}
-            onClick={onButtonClick}
-            id="custom-button-id"
-          >
+class Usage extends React.Component {
+  initialState = { timesClicked: 0 };
+  state = this.initialState;
+  handleToggle = (...args) => {
+    this.setState(({ timesClicked }) => ({ timesClicked: timesClicked + 1 }));
+  };
+
+  handleReset = (...args) => {
+    this.setState(this.initialState);
+  };
+
+  toggleStateReducer = (state, changes) => {
+    if (changes.type === "forced") {
+      return changes;
+    }
+    if (this.state.timesClicked >= 4) {
+      return { ...changes, on: false };
+    }
+    return changes;
+  };
+  render() {
+    const { timesClicked } = this.state;
+    return (
+      <Toggle
+        onToggle={this.handleToggle}
+        onReset={this.handleReset}
+        stateReducer={this.toggleStateReducer}
+      >
+        {({ getTogglerProps, on, toggle, reset }) => (
+          <div>
+            <Switch on={on} {...getTogglerProps({ on })} />
+            <hr />
+            {timesClicked >= 4 && (
+              <>
+                <div>Whoa! Too much!</div>
+                <button onClick={() => toggle({ type: "forced" })}>
+                  Force toggle
+                </button>
+              </>
+            )}
+            <button onClick={reset}>Reset</button>
+
             {on ? "on" : "off"}
-          </button>
-        </div>
-      )}
-    </Toggle>
-  );
+          </div>
+        )}
+      </Toggle>
+    );
+  }
 }
+
 Usage.title = "Render Props";
 
 export { Toggle, Usage as default };
