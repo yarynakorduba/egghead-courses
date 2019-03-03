@@ -4,7 +4,12 @@ import { Switch } from "./switch";
 const callAll = (...fns) => (...args) => fns.forEach(fn => fn && fn(...args));
 
 class Toggle extends React.Component {
-  state = { on: false };
+  static defaultProps = {
+    onReset: () => {},
+    initialOn: false
+  };
+  initialState = { on: this.props.initialOn };
+  state = this.initialState;
   toggle = () =>
     this.setState(
       ({ on }) => ({ on: !on }),
@@ -12,6 +17,9 @@ class Toggle extends React.Component {
         this.props.onToggle && this.props.onToggle(this.state.on);
       }
     );
+
+  reset = () =>
+    this.setState(this.initialState, () => this.props.onReset(this.state.on));
 
   getTogglerProps = ({ onClick, className, ...props }) => {
     return {
@@ -24,7 +32,8 @@ class Toggle extends React.Component {
   getStateAndHelpers = () => ({
     on: this.state.on,
     toggle: this.toggle,
-    getTogglerProps: this.getTogglerProps
+    getTogglerProps: this.getTogglerProps,
+    reset: this.reset
   });
 
   render() {
@@ -42,20 +51,23 @@ function CommonToggle(props) {
 
 function Usage({
   onToggle = (...args) => console.log("onToggle", ...args),
-  onButtonClick = (...args) => alert("onButtonClick")
+  onButtonClick = (...args) => alert("onButtonClick"),
+  onReset = (...args) => console.log("onreset"),
+  initialOn = true
 }) {
   return (
-    <Toggle onToggle={onToggle}>
-      {({ on, getTogglerProps }) => (
+    <Toggle onToggle={onToggle} onReset={onReset}>
+      {({ getTogglerProps, on, reset }) => (
         <div>
           <Switch on={on} {...getTogglerProps({ on })} />
           <hr />
+          <button onClick={reset}>Reset</button>
           <button
             aria-label="custom-button"
             {...getTogglerProps({
               "aria-pressed": null,
               "aria-label": "custom-button",
-              id: "custom-button-id",
+              id: "custom-button-id"
             })}
             onClick={onButtonClick}
             id="custom-button-id"
