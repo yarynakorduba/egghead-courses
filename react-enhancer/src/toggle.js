@@ -1,64 +1,48 @@
-import React, { Component } from "react";
+import React from "react";
 import { Switch } from "./switch";
 
-const ToggleContext = React.createContext();
-
-const ToggleConsumer = props => (
-  <ToggleContext.Consumer>
-    {context => {
-      if (!context) {
-        throw new Error(
-          "Toggle Compound Components must be rendered within the toggle component"
-        );
-      }
-      return props.children(context);
-    }}
-  </ToggleContext.Consumer>
-);
-
-class Toggle extends Component {
-  static On = ({ children }) => (
-    <ToggleConsumer>{({ on }) => (on ? children : null)}</ToggleConsumer>
-  );
-  static Off = ({ children }) => (
-    <ToggleConsumer>{({ on }) => (on ? null : children)}</ToggleConsumer>
-  );
-
-  static Button = props => (
-    <ToggleConsumer>
-      {({ on, toggle }) => <Switch on={on} onClick={toggle} {...props} />}
-    </ToggleConsumer>
-  );
-
+class Toggle extends React.Component {
   state = { on: false };
   toggle = () =>
     this.setState(
-      currentState => ({ on: !currentState.on }),
+      ({ on }) => ({ on: !on }),
       () => {
-        this.props.onToggle(this.state.on);
+        this.props.onToggle && this.props.onToggle(this.state.on);
       }
     );
   render() {
-    return (
-      <ToggleContext.Provider
-        value={{ on: this.state.on, toggle: this.toggle }}
-      >
-        {this.props.children}
-      </ToggleContext.Provider>
-    );
+    return this.props.children({
+      on: this.state.on,
+      toggle: this.toggle
+    });
   }
 }
 
-function Usage({ onToggle = (...args) => console.log("onToggle", ...args) }) {
+function CommonToggle(props) {
   return (
-    <Toggle onToggle={onToggle}>
-      <div>
-        <Toggle.Button />
-      </div>
-      <Toggle.On>The button is on</Toggle.On>
-      <Toggle.Off>The button is off</Toggle.Off>
+    <Toggle {...props}>
+      {({ on, toggle }) => <Switch on={on} onClick={toggle} />}
     </Toggle>
   );
 }
 
-export default Usage;
+function Usage({ onToggle = (...args) => console.log("onToggle", ...args) }) {
+  return <CommonToggle />;
+  return (
+    <Toggle onToggle={onToggle}>
+      {({ on, toggle }) => (
+        <div>
+          {on ? "The button is on" : "The button is off"}
+          <Switch on={on} onClick={toggle} />
+          <hr />
+          <button aria-label="custom-button" onClick={toggle}>
+            {on ? "on" : "off"}
+          </button>
+        </div>
+      )}
+    </Toggle>
+  );
+}
+Usage.title = "Render Props";
+
+export { Toggle, Usage as default };
