@@ -7,17 +7,28 @@ import {
   setPropTypes,
   compose,
   withProps,
-  withState,
-  withHandlers
+  withHandlers,
+  withReducer
 } from "recompose";
 import PropTypes from "prop-types";
 
 const withToggle = compose(
-  withState("toggledOn", "toggle", false),
+  withReducer("toggledOn", "dispatch", (state, action) => {
+    switch (action.type) {
+      case "SHOW":
+        return true;
+      case "HIDE":
+        return false;
+      case "TOGGLE":
+        return !state;
+      default:
+        return state;
+    }
+  }),
   withHandlers({
-    show: ({ toggle }) => e => toggle(true),
-    hide: ({ toggle }) => e => toggle(false),
-    toggle: ({ toggle }) => e => toggle(current => !current)
+    show: ({ dispatch }) => e => dispatch({ type: "SHOW" }),
+    hide: ({ dispatch }) => e => dispatch({ type: "HIDE" }),
+    toggle: ({ dispatch }) => e => dispatch({ type: "TOGGLE" })
   })
 );
 
@@ -54,13 +65,19 @@ const Tooltip = withToggle(({ text, children, toggledOn, show, hide }) => (
     {toggledOn && (
       <div
         className={"Tooltip"}
-        style={{ background: "aliceblue", color: "gray" }}
+        style={{
+          background: "aliceblue",
+          color: "gray",
+          position: "fixed",
+          left: 0,
+          top: 0
+        }}
       >
         {text}
       </div>
     )}
     <div
-      style={{ with: "30rem", height: "2rem" }}
+      style={{ with: "30rem", height: "2rem", marginTop: "1rem" }}
       onMouseEnter={show || (() => console.log("enter"))}
       onMouseLeave={hide}
     >
