@@ -5,42 +5,64 @@ import * as serviceWorker from "./serviceWorker";
 import { branch, compose, lifecycle, renderComponent } from "recompose";
 
 function fetchData() {
-  return new Promise(resolve => {
-    setTimeout(() => resolve({ name: "Tim", status: "active" }), 1500);
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      reject({ statusCode: "UNAUTHENTICATED" });
+    }, 1500);
   });
 }
 
 const withUserData = lifecycle({
-  state: {
-    loading: true
-  },
   componentDidMount() {
-    fetchData().then(data => this.setState({ ...data, loading: false }));
+    fetchData().then(
+      users => this.setState({ users }),
+      error => this.setState({ error })
+    );
   }
 });
+const UNAUTHENTICATED = 401;
+const UNAUTORIZED = 403;
 
-const Spinner = () => <div className={"Spinner"}>Loading the data... </div>;
+const errorMsg = {
+  UNAUTHENTICATED: "NOT AUTHENTICATED",
+  UNAUTORIZED: "NOT AUTHORIZED"
+};
 
-const isLoading = ({ loading }) => loading;
+const AuthError = ({ error }) => <div>{errorMsg[error.statusCode]}</div>;
+const UsersEmptyState = () => "No users";
 
-const withSpinnerWhileLoading = branch(isLoading, renderComponent(Spinner));
+const hasErrorCode = ({ error }) => error && error.statusCode;
+const noUsers = ({ users }) => users && !users.length;
 
-const ehnancer = compose(
+const nonOptimalStates = states =>
+  compose(
+    ...states.map(state => branch(state.when, renderComponent(state.render)))
+  );
+const enhancer = compose(
   withUserData,
-  withSpinnerWhileLoading
+  nonOptimalStates([
+    {
+      when: hasErrorCode,
+      render: AuthError
+    },
+    { when: noUsers, render: UsersEmptyState }
+  ])
 );
 
-const User = ehnancer(({ name, status }) => (
+const UserList = enhancer(({ users }) => (
+  <div>{users && users.map(user => <User {...user} />)}</div>
+));
+const User = ({ name, status }) => (
   <div>
     <div className={"User"}>
       {name} - {status}
     </div>
   </div>
-));
+);
 
 const App = () => (
   <div>
-    <User />
+    <UserList />
   </div>
 );
 
