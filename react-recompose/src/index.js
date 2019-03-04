@@ -2,30 +2,39 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import * as serviceWorker from "./serviceWorker";
-import { compose, flattenProp, withProps } from "recompose";
+import { branch, compose, lifecycle, renderComponent } from "recompose";
 
-function ReactRedux() {
-  const state = {
-    user: { name: "Tim", status: "active" }
-  };
-
-  return {
-    connect: map => withProps(map(state))
-  };
+function fetchData() {
+  return new Promise(resolve => {
+    setTimeout(() => resolve({ name: "Tim", status: "active" }), 1500);
+  });
 }
 
-const { connect } = ReactRedux();
+const withUserData = lifecycle({
+  state: {
+    loading: true
+  },
+  componentDidMount() {
+    fetchData().then(data => this.setState({ ...data, loading: false }));
+  }
+});
 
-const mapStateToProps = state => ({ user: state.user });
+const Spinner = () => <div className={"Spinner"}>Loading the data... </div>;
 
-const enhance = compose(
-  connect(mapStateToProps),
-  flattenProp("user")
+const isLoading = ({ loading }) => loading;
+
+const withSpinnerWhileLoading = branch(isLoading, renderComponent(Spinner));
+
+const ehnancer = compose(
+  withUserData,
+  withSpinnerWhileLoading
 );
 
-const User = enhance(({ name, status }) => (
-  <div className={"User"}>
-    {name} - {status}
+const User = ehnancer(({ name, status }) => (
+  <div>
+    <div className={"User"}>
+      {name} - {status}
+    </div>
   </div>
 ));
 
