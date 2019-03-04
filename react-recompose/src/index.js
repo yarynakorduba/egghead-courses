@@ -2,13 +2,29 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import * as serviceWorker from "./serviceWorker";
-import { branch, compose, lifecycle, renderComponent } from "recompose";
+import {
+  branch,
+  compose,
+  lifecycle,
+  renderComponent,
+  renderNothing
+} from "recompose";
+
+const userIsNotActive = ({ status }) =>
+  console.log(status) || status !== "active";
+const hideIfNotActive = branch(userIsNotActive, renderNothing);
+
+const users = [
+  { name: "Tim", status: "active" },
+  { name: "Bob", status: "active" },
+  { name: "Joe", status: "inactive" },
+  { name: "Jim", status: "pending" }
+];
+const featured = users[3];
 
 function fetchData() {
   return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      reject({ statusCode: "UNAUTHENTICATED" });
-    }, 1500);
+    setTimeout(() => {}, 1500);
   });
 }
 
@@ -20,8 +36,6 @@ const withUserData = lifecycle({
     );
   }
 });
-const UNAUTHENTICATED = 401;
-const UNAUTORIZED = 403;
 
 const errorMsg = {
   UNAUTHENTICATED: "NOT AUTHENTICATED",
@@ -49,9 +63,19 @@ const enhancer = compose(
   ])
 );
 
-const UserList = enhancer(({ users }) => (
-  <div>{users && users.map(user => <User {...user} />)}</div>
+const FeaturedUser = hideIfNotActive(({ status, name }) => (
+  <div>
+    Today`s featured user: <User status={status} name={name} />
+  </div>
 ));
+
+const UserList = enhancer(() => (
+  <div>
+    {users && users.map((user, id) => <User key={id} {...user} />)}
+    {users && <FeaturedUser status={featured.status} name={featured.name} />}
+  </div>
+));
+
 const User = ({ name, status }) => (
   <div>
     <div className={"User"}>
