@@ -1,42 +1,73 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { render } from "react-dom";
+import { compose, withState, withHandlers, shouldUpdate } from "recompose";
 import "./index.css";
-import * as serviceWorker from "./serviceWorker";
-import {
-  branch,
-  componentFromProp,
-  compose,
-  lifecycle,
-  renderComponent,
-  renderNothing,
-  withProps
-} from "recompose";
 
-const Link = compose(
-  withProps(({ type = "a", to = "#" }) =>
-    type === "a"
-      ? { type, href: to }
-      : {
-          type,
-          onClick(e) {
-            window.location = to;
-          }
-        }
-  )
-)(componentFromProp("type"));
+const optimize = compose(
+  shouldUpdate(
+    (prev, next) =>
+      prev.data !== next.data ||
+      prev.width !== next.width ||
+      prev.onChange !== next.onChange
+  ),
+  withHandlers(({ id, onChange }) => e => onChange(id, e.target.value))
+);
 
-const App = () => (
-  <div>
-    <Link to={"#/page1"}>Anchor Link</Link>
-    <Link to={"#/page2"} type={"button"}>
-      Button Link
-    </Link>
+const Cell = optimize(({ data, onChange, width }) => (
+  <div
+    className="Cell"
+    style={{
+      width: `${width}%`,
+      borderColor: randomColor()
+    }}
+  >
+    <textarea type="text" value={data} onChange={onChange} />
+  </div>
+));
+
+const Spreadsheet = ({ rows, cols, cellsData, onCellChange }) => (
+  <div className="Spreadsheet">
+    {range(rows).map((row, i) =>
+      range(cols)
+        .map((col, j) => `${i}-${j}`)
+        .map(id => (
+          <Cell
+            key={id}
+            id={id}
+            data={cellsData[id] || ""}
+            onChange={onCellChange}
+            width={100 / cols}
+          />
+        ))
+    )}
   </div>
 );
 
-ReactDOM.render(<App />, document.getElementById("root"));
+const enhance = compose(
+  withState("cellsData", "setCells", {}),
+  withHandlers({
+    setCellState: ({ cellsData, setCells }) => (id, val) =>
+      setCells({
+        ...cellsData,
+        [id]: val
+      })
+  })
+);
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: http://bit.ly/CRA-PWA
-serviceWorker.unregister();
+const App = enhance(({ cellsData, setCellState }) => (
+  <div className="App">
+    <Spreadsheet
+      {...{ rows: 3, cols: 3, cellsData, onCellChange: setCellState }}
+    />
+  </div>
+));
+
+render(<App />, document.getElementById("root"));
+
+function range(num) {
+  return Array.from(Array(num).keys());
+}
+
+function randomColor() {
+  return "#" + Math.floor(Math.random() * 16777215).toString(16);
+}
