@@ -2,39 +2,51 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import * as serviceWorker from "./serviceWorker";
-import { lifecycle } from "recompose";
+import { mapProps } from "recompose";
 
-const config = {
-  showStatus: true,
-  canDeleteUsers: true
-};
+const users = [
+  {
+    name: "TimActive",
+    status: "active"
+  },
+  {
+    name: "TimPending",
+    status: "pending"
+  },
+  { name: "TimInactive", status: "inactive" },
+  { name: "Tim2Active", status: "active" }
+];
 
-function fetchConfiguration() {
-  return new Promise(resolve => {
-    setTimeout(() => resolve(config), 300);
-  });
-}
-
-const configPromise = fetchConfiguration();
-
-const withConfig = lifecycle({
-  state: { config: {} },
-  componentDidMount() {
-    configPromise.then(config => this.setState({ config }));
-  }
-});
-
-const User = withConfig(({ name, status, config }) => (
+const User = ({ name, status }) => (
   <div className={"User"}>
     {name}
-    {config && config.showStatus && "-" + status}
-    {config && config.canDeleteUsers && <button>x</button>}
+    {" - " + status}
   </div>
-));
+);
+
+const UserList = ({ users, status }) => (
+  <div>
+    <h3>{status} users</h3>
+    {users &&
+      users.map((user, ind) => <User key={ind} {...user} status={status} />)}
+  </div>
+);
+
+const filterByStatus = status =>
+  mapProps(({ users }) => ({
+    status,
+    users: users.filter(u => u.status === status)
+  }));
+
+const ActiveUsers = filterByStatus("active")(UserList);
+const InactiveUsers = filterByStatus("inactive")(UserList);
+const PendingUsers = filterByStatus("pending")(UserList);
 
 const App = () => (
   <div>
-    <User name={"Tim"} status={"active"} />
+    <ActiveUsers users={users} />
+    <InactiveUsers users={users} />
+    <PendingUsers users={users} />
   </div>
 );
 
