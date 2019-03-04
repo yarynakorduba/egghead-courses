@@ -1,73 +1,40 @@
 import React from "react";
 import { render } from "react-dom";
-import { compose, withState, withHandlers, shouldUpdate } from "recompose";
+import { isClassComponent } from "recompose";
 import "./index.css";
 
-const optimize = compose(
-  shouldUpdate(
-    (prev, next) =>
-      prev.data !== next.data ||
-      prev.width !== next.width ||
-      prev.onChange !== next.onChange
-  ),
-  withHandlers(({ id, onChange }) => e => onChange(id, e.target.value))
-);
+function createEagerFactory(Component) {
+  return (props, children) => {
+    if (isReferentiallyTransparentFunctionComponent(Component)) {
+      return children ? Component({ ...props, ...children }) : Component(props);
+    }
+    return children ? (
+      <Component {...props}>{children}</Component>
+    ) : (
+      <Component {...props} />
+    );
+  };
+}
+const overrideProps = overrideProps => BaseComponent => {
+  const factory = createEagerFactory(BaseComponent);
+  return props => factory({ ...props, ...overrideProps }, props.children);
+};
 
-const Cell = optimize(({ data, onChange, width }) => (
-  <div
-    className="Cell"
-    style={{
-      width: `${width}%`,
-      borderColor: randomColor()
-    }}
-  >
-    <textarea type="text" value={data} onChange={onChange} />
-  </div>
-));
+function isReferentiallyTransparentFunctionComponent(Component) {
+  return Boolean(
+    typeof Component === "function" &&
+      !isClassComponent(Component) &&
+      !Component.defaultProps &&
+      !Component.contextTypes &&
+      (window.process.env.NODE_ENV === "production" || !Component.propTypes)
+  );
+}
 
-const Spreadsheet = ({ rows, cols, cellsData, onCellChange }) => (
-  <div className="Spreadsheet">
-    {range(rows).map((row, i) =>
-      range(cols)
-        .map((col, j) => `${i}-${j}`)
-        .map(id => (
-          <Cell
-            key={id}
-            id={id}
-            data={cellsData[id] || ""}
-            onChange={onCellChange}
-            width={100 / cols}
-          />
-        ))
-    )}
+const User = ({ name }) => <div>{name}</div>;
+const App = () => (
+  <div>
+    <User name={"Joe"} />
   </div>
 );
-
-const enhance = compose(
-  withState("cellsData", "setCells", {}),
-  withHandlers({
-    setCellState: ({ cellsData, setCells }) => (id, val) =>
-      setCells({
-        ...cellsData,
-        [id]: val
-      })
-  })
-);
-
-const App = enhance(({ cellsData, setCellState }) => (
-  <div className="App">
-    <Spreadsheet
-      {...{ rows: 3, cols: 3, cellsData, onCellChange: setCellState }}
-    />
-  </div>
-));
 
 render(<App />, document.getElementById("root"));
-
-function range(num) {
-  return Array.from(Array(num).keys());
-}
-
-function randomColor() {
-  return "#" + Math.floor(Math.random() * 16777215).toString(16);
-}
