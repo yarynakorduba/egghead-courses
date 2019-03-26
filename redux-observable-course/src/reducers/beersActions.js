@@ -1,6 +1,7 @@
 export const FETCH_FULFILLED = "FETCH_FULFILLED";
 export const SET_STATUS = "SET_STATUS";
 export const FETCH_DATA = "FETCH_DATA";
+export const SEARCH = "SEARCH";
 
 export const setStatus = status => ({
   type: SET_STATUS,
@@ -13,5 +14,10 @@ export const fetchFulfilled = beers => ({
 });
 
 export const fetchData = () => ({
-    type: FETCH_DATA
+  type: FETCH_DATA
+});
+
+export const search = input => ({
+  type: SEARCH,
+  payload: input
 });

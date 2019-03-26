@@ -1,21 +1,20 @@
 import { ajax } from "rxjs/ajax";
 import { map, switchMap } from "rxjs/operators";
-import {
-  FETCH_DATA,
-  fetchFulfilled,
-  setStatus
-} from "../reducers/beersActions";
+import { fetchFulfilled, SEARCH, setStatus } from "../reducers/beersActions";
 import { ofType } from "redux-observable";
 import { concat, of } from "rxjs";
 const API = "https://api.punkapi.com/v2/beers";
+const search = term => `${API}?beer_name=${encodeURIComponent(term)}`;
 
 export const fetchBeersEpic = action$ => {
   return action$.pipe(
-    ofType(FETCH_DATA),
-    switchMap(() => {
+    ofType(SEARCH),
+    switchMap(({ payload }) => {
       return concat(
         of(setStatus("pending")),
-        ajax.getJSON(API).pipe(map(response => fetchFulfilled(response)))
+        ajax
+          .getJSON(search(payload))
+          .pipe(map(response => fetchFulfilled(response)))
       );
     })
   );

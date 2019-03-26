@@ -1,20 +1,18 @@
 import React from "react";
 import { connect } from "react-redux";
-import { fetchData } from "../reducers/beersActions";
+import { search } from "../reducers/beersActions";
 import { BeerList } from "./BeersList";
 
 export const Beers = props => {
-  const { status, fetchData, data } = props;
+  const { status, search, data } = props;
   return (
     <>
       <div className={"App-inputs"}>
-        <button
-          type={"button"}
-          onClick={fetchData}
-          disabled={status === "pending"}
-        >
-          Fetch Beers
-        </button>
+        <input
+          type={"text"}
+          placeholder={"Search beers..."}
+          onChange={evt => search(evt.target.value)}
+        />
         {status === "pending" && <span>Pending request...</span>}
         {status === "success" && <BeerList beers={data} />}
       </div>
@@ -24,5 +22,5 @@ export const Beers = props => {
 
 export default connect(
   state => state.beers,
-  { fetchData }
+  { search }
 )(Beers);
