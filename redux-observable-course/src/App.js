@@ -1,15 +1,13 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import "./App.css";
-import BeerList from "./components/BeersList";
+import Beers from "./components/Beers";
 
 class App extends Component {
   render() {
-    console.log(this.props.name);
-
     return (
       <div className="App">
-        <BeerList />
+        <Beers />
       </div>
     );
   }

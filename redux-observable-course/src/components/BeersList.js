@@ -1,18 +1,13 @@
 import React from "react";
-import { connect } from "react-redux";
 
-export const BeerList = props => {
-  const { data, loading } = props;
+export const BeerList = ({ beers }) => {
   return (
-    <div>
-      {loading && <p>Please wait...</p>}
-      {!loading && (
-        <div>
-          <p>Got {data.length} beers</p>
-        </div>
-      )}
-    </div>
+    <ol>
+      {beers.map(beer => (
+        <li>{beer.name}</li>
+      ))}
+    </ol>
   );
 };
 
-export default connect(state => state.beers)(BeerList);
+export default BeerList;

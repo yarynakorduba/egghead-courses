@@ -1,8 +1,8 @@
-import { FETCH_FULFILLED } from "./beersActions";
+import { FETCH_FULFILLED, SET_STATUS } from "./beersActions";
 
 const initialState = {
   data: [],
-  loading: true
+  status: "idle"
 };
 
 export const beersReducers = (state = initialState, action) => {
@@ -10,8 +10,13 @@ export const beersReducers = (state = initialState, action) => {
     case FETCH_FULFILLED:
       return {
         ...state,
-        loading: false,
+        status: "success",
         data: action.payload
+      };
+    case SET_STATUS:
+      return {
+        ...state,
+        status: action.payload
       };
     default:
       return state;
