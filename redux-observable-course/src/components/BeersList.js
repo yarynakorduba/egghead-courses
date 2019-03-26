@@ -4,7 +4,7 @@ export const BeerList = ({ beers }) => {
   return (
     <ol>
       {beers.map(beer => (
-        <li>{beer.name}</li>
+        <li key={beer.name}>{beer.name}</li>
       ))}
     </ol>
   );
