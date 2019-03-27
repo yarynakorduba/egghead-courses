@@ -2,12 +2,24 @@ import React from "react";
 import { connect } from "react-redux";
 import { cancel, search } from "../reducers/beersActions";
 import { BeerList } from "./BeersList";
+import { setConfig } from "../configActions";
 
 export const Beers = props => {
-  const { status, search, data, messages, cancel } = props;
+  const { status, search, data, messages, cancel, config, setConfig } = props;
   return (
     <>
       <div className={"App-inputs"}>
+        <select
+          name={"per-page"}
+          defaultValue={config.perPage}
+          onChange={e => setConfig({ perPage: Number(e.target.value) })}
+        >
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(value => (
+            <option key={value} value={value}>
+              {value} results
+            </option>
+          ))}
+        </select>
         <input
           type={"text"}
           placeholder={"Search beers..."}
@@ -26,7 +38,9 @@ export const Beers = props => {
   );
 };
 
+const mapState = state => ({ ...state.beers, config: state.config });
+
 export default connect(
-  state => state.beers,
-  { search, cancel }
+  mapState,
+  { search, cancel, setConfig }
 )(Beers);
