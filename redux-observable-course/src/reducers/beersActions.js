@@ -3,6 +3,9 @@ export const SET_STATUS = "SET_STATUS";
 export const FETCH_DATA = "FETCH_DATA";
 export const SEARCH = "SEARCH";
 export const FETCH_FAILED = "FETCH_FAILED";
+export const CANCEL = "CANCEL";
+
+export const cancel = () => ({ type: CANCEL });
 
 export const setStatus = status => ({
   type: SET_STATUS,

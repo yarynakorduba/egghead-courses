@@ -4,9 +4,12 @@ import {
   switchMap,
   debounceTime,
   filter,
-  catchError
+  catchError,
+  delay,
+  takeUntil
 } from "rxjs/operators";
 import {
+  CANCEL,
   fetchFailed,
   fetchFulfilled,
   SEARCH,
@@ -26,7 +29,11 @@ export const fetchBeersEpic = action$ => {
       return concat(
         of(setStatus("pending")),
         ajax.getJSON(search(payload)).pipe(
+            delay(5000),
+
+            takeUntil(action$.pipe(ofType(CANCEL))),
           map(response => fetchFulfilled(response)),
+
           catchError(err => {
             return of(fetchFailed(err.response.message));
           })

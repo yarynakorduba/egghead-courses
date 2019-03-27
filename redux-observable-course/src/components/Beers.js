@@ -1,10 +1,10 @@
 import React from "react";
 import { connect } from "react-redux";
-import { search } from "../reducers/beersActions";
+import { cancel, search } from "../reducers/beersActions";
 import { BeerList } from "./BeersList";
 
 export const Beers = props => {
-  const { status, search, data, messages } = props;
+  const { status, search, data, messages, cancel } = props;
   return (
     <>
       <div className={"App-inputs"}>
@@ -13,7 +13,12 @@ export const Beers = props => {
           placeholder={"Search beers..."}
           onChange={evt => search(evt.target.value)}
         />
-        {status === "pending" && <span>Pending request...</span>}
+        {status === "pending" && (
+          <>
+            <span>Pending request...</span>
+            <button onClick={cancel}>cancel</button>
+          </>
+        )}
         {status === "success" && <BeerList beers={data} />}
         {status === "failure" && <div>Oops! Failure: {messages[0].text}</div>}
       </div>
@@ -23,5 +28,5 @@ export const Beers = props => {
 
 export default connect(
   state => state.beers,
-  { search }
+  { search, cancel }
 )(Beers);
