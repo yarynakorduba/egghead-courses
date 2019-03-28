@@ -1,8 +1,6 @@
-import { ajax } from "rxjs/ajax";
 import {
   catchError,
   debounceTime,
-  delay,
   filter,
   map,
   mapTo,
@@ -11,33 +9,29 @@ import {
   withLatestFrom
 } from "rxjs/operators";
 import {
+  SEARCH,
   fetchFulfilled,
   setStatus,
   fetchFailed,
   CANCEL,
-  reset,
-  RANDOM
+  reset
 } from "../reducers/beersActions";
 import { ofType } from "redux-observable";
-import { concat, fromEvent, of, merge, race, forkJoin } from "rxjs";
+import { concat, fromEvent, of, merge, race } from "rxjs";
 
 const search = (apiBase, perPage, term) =>
   `${apiBase}?beer_name=${encodeURIComponent(term)}&per_page=${perPage}`;
 
-const random = apiBase => `${apiBase}/random`;
-
-export function fetchBeersEpic(action$, state$) {
+export function fetchBeersEpic(action$, state$, { getJSON }) {
   return action$.pipe(
-    ofType(RANDOM),
+    ofType(SEARCH),
     debounceTime(500),
+    filter(({ payload }) => payload.trim() !== ""),
     withLatestFrom(state$.pipe(pluck("config"))),
     switchMap(([{ payload }, config]) => {
-      const reqs = [...Array(config.perPage)].map(() =>
-        ajax.getJSON(random(config.apiBase)).pipe(pluck(0))
-      );
-
-      const ajax$ = forkJoin(reqs).pipe(
-        delay(500),
+      const ajax$ = getJSON(
+        search(config.apiBase, config.perPage, payload)
+      ).pipe(
         map(resp => fetchFulfilled(resp)),
         catchError(err => {
           return of(fetchFailed(err.response.message));
