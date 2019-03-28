@@ -5,7 +5,9 @@ export const SEARCH = "SEARCH";
 export const FETCH_FAILED = "FETCH_FAILED";
 export const CANCEL = "CANCEL";
 export const RESET = "RESET";
+export const RANDOM = "RANDOM";
 
+export const random = () => ({ type: RANDOM });
 export const cancel = () => ({ type: CANCEL });
 export const reset = () => ({ type: RESET });
 

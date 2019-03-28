@@ -1,11 +1,11 @@
 import React from "react";
 import { connect } from "react-redux";
-import { cancel, search } from "../reducers/beersActions";
+import { cancel, random } from "../reducers/beersActions";
 import { BeerList } from "./BeersList";
 import { setConfig } from "../configActions";
 
 export const Beers = props => {
-  const { status, search, data, messages, cancel, config, setConfig } = props;
+  const { status, random, data, messages, cancel, config, setConfig } = props;
   return (
     <>
       <div className={"App-inputs"}>
@@ -20,11 +20,9 @@ export const Beers = props => {
             </option>
           ))}
         </select>
-        <input
-          type={"text"}
-          placeholder={"Search beers..."}
-          onChange={evt => search(evt.target.value)}
-        />
+        <button type={"button"} onClick={random}>
+          Random
+        </button>
         {status === "pending" && (
           <>
             <span>Pending request...</span>
@@ -42,5 +40,5 @@ const mapState = state => ({ ...state.beers, config: state.config });
 
 export default connect(
   mapState,
-  { search, cancel, setConfig }
+  { random, cancel, setConfig }
 )(Beers);
