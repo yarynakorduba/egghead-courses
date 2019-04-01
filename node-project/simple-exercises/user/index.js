@@ -1,4 +1,4 @@
-const db = require("../db");
+const db = require("../db/index");
 const log = require("../logger")(module);
 
 function User(name) {

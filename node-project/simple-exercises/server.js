@@ -1,7 +1,7 @@
 const log = require("./logger")(module);
-const db = require("./db");
+const db = require("./db/index");
 db.connect();
-const User = require("./user");
+const User = require("./user/index");
 
 function run() {
   const vasyl = new User("Vasyl");
