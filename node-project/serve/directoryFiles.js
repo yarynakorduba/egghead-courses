@@ -6,7 +6,7 @@ exports.loadFiles = function(req, res) {
     if (err) throw err;
     res.end(
       JSON.stringify({
-        directoryFiles: directoryFiles,
+        directoryFiles,
         dirname: path.basename(__dirname) + "/"
       })
     );
