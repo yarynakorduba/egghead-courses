@@ -1,14 +1,15 @@
-const http = require("http");
-const server = new http.Server(function(req, res) {}).listen(3000);
+const fs = require("fs");
 
-setTimeout(function() {
-  server.close();
-}, 2500);
+fs.open(__filename, "r", function(arr, file) {
+  console.log("IO!");
+});
 
-const timer = setInterval(function() {
-  console.log(process.memoryUsage());
-}, 2500);
+//right after IO
+setImmediate(function() {
+  console.log("immediate");
+});
 
-// tells LibUV that this timer should not be consider
-// while checking the watchers and deciding whether to continue running
-timer.unref();
+// before IO
+process.nextTick(function() {
+  req.en("readable", function() {});
+});
