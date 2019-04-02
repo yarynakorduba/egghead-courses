@@ -1,7 +1,7 @@
 let clients = [];
 
 exports.subscribe = function(req, res) {
-  console.log("subscribe");
+  console.log("loadFiles");
   clients.push(res);
   res.on("close", function() {
     clients.splice(clients.indexOf(res), 1);

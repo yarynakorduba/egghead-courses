@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Directory Files</title>
+  </head>
+  <body>
+    <h1>index of <span id="directory"></span></h1>
+    <ul id="files" className="listDir__files"></ul>
+    <script>
+      loadFileLinks();
+      function loadFileLinks() {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "/loadFileLinks", true);
+        xhr.onload = function() {
+          response = JSON.parse(this.responseText);
+          response.directoryFiles.map(file => {
+            const li = document.createElement("li");
+            const a = document.createElement("a");
+            a.href = a.textContent = file;
+            li.appendChild(a);
+            files.appendChild(li);
+          });
+          directory.innerText = response.dirname;
+        };
+        xhr.onerror = xhr.onabort = function() {
+          setTimeout(loadFileLinks, 500);
+        };
+        xhr.send("");
+      }
+    </script>
+  </body>
+</html>

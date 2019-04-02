@@ -23,7 +23,7 @@
         return false;
       };
       subscribe();
-      function subscribe() {
+      function loadFiles() {
         const xhr = new XMLHttpRequest();
         xhr.open("GET", "/subscribe", true);
         xhr.onload = function() {

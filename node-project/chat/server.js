@@ -7,7 +7,7 @@ http
       case "/":
         sendFile("index.html", res);
         break;
-      case "/subscribe":
+      case "/loadFiles":
         chat.subscribe(req, res);
         break;
       case "/publish":
