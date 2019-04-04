@@ -3,7 +3,6 @@ const fs = require("fs");
 
 http
   .createServer(function(req, res) {
-    let info;
     if (req.url === "/") {
       fs.readFile(
         "index.html",
@@ -19,7 +18,7 @@ http
         }
       );
     } else if (req.url === "/now") {
-      req.end(new Date().toString());
+      res.end(new Date().toString());
     }
   })
   .listen(3000);
