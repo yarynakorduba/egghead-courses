@@ -1,6 +1,11 @@
 import React from "react";
 import { compose, withHandlers, withStateHandlers } from "recompose";
-import {checkWhetherInputIsSimpleEquation, solveWithExternalTool, whitespaceStripper, solveWithJS} from "../helpers";
+import {
+  checkWhetherInputIsSimpleEquation,
+  solveWithExternalTool,
+  stripWhitespacesFromString,
+  solveWithJS
+} from "../helpers";
 
 const Calculator = ({
   setInputValue,
@@ -30,7 +35,7 @@ const enhancer = compose(
     {
       setInputValue: () => ev => {
         ev.preventDefault();
-        return { inputValue: whitespaceStripper(ev.target.value) };
+        return { inputValue: stripWhitespacesFromString(ev.target.value) };
       },
       setResult: () => result => ({ result })
     }
@@ -39,12 +44,10 @@ const enhancer = compose(
     setEquation: ({ inputValue, setResult }) => ev => {
       ev.preventDefault();
       if (!checkWhetherInputIsSimpleEquation(inputValue)) {
-        console.log("wolfram");
         return solveWithExternalTool(inputValue).then(
           res => console.log(res) || setResult(res)
         );
       } else {
-        console.log("simple", inputValue);
         return setResult(solveWithJS(inputValue));
       }
     }
